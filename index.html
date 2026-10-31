@@ -1,180 +1,496 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Clue: The Floors of Mystery</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>To Stop A Murder</title>
 
-    <style>
-        body {
-            background: #20252b;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            position: relative;
-            margin: 0;
-            padding: 10px;
-        }
+<style>
+    body {
+        background: #20252b;
+        color: white;
+        font-family: Arial, sans-serif;
+        text-align: center;
+    }
 
-h2 {
-    margin-top: 25px;
-    letter-spacing: 3px;
-}
+    h1 {
+        margin-top: 25px;
+        letter-spacing: 5px;
+    }
 
-#hud {
-    margin-bottom: 15px;
-    font-size: 16px;
-}
+    #game {
+        display: flex;
+        justify-content: center;
+        margin: 25px auto;
+        overflow-x: auto;
+    }
 
-#hud p {
-    margin: 5px;
-}
-
-#gameContainer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-}
-
-canvas {
-    background-color: #aeb8c2;
-    display: block;
-    margin: 5px;
-    border: 2px solid #e0e0e0;
-    border-radius: 4px;
-    max-width: 100%;
-}
-
-#mapCanvas {
-    background-color: #aeb8c2;
-}
-
-button {
-    padding: 10px 22px;
-    background: #3498db;
-    border: none;
-    border-radius: 5px;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    margin: 5px;
-}
-
-button:hover {
-    background: #217dbb;
-}
-
-#cheatContainer {
-    margin-top: 15px;
-}
-
-#cheatInput {
-    font-size: 16px;
-    padding: 9px;
-    width: 150px;
-    border: 1px solid #bdc3c7;
-    border-radius: 5px;
-    background: #ecf0f1;
-    color: #20252b;
-}
-
-#cheatButton {
-    font-size: 16px;
-    padding: 10px 18px;
-}
-
-#cheatDisplay {
-    font-size: 16px;
-    margin-top: 10px;
-    color: #2ecc71;
-}
-
-#instructions {
-    display: none;
-    position: absolute;
-    left: 10px;
-    top: 100px;
-    background-color: #303841;
-    color: #bdc3c7;
-    padding: 15px;
-    border: 1px solid #3498db;
-    border-radius: 5px;
-    text-align: left;
-    font-size: 14px;
-    line-height: 1.7;
-    z-index: 200;
-}
-
-#buttonControls {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 100;
-    display: none;
-}
-
-#buttonControls button {
-    font-size: 30px;
-    padding: 15px 22px;
-    margin: 5px;
-    border-radius: 8px;
-    background: #3498db;
-}
-
-#buttonControls button:hover {
-    background: #217dbb;
-}
-
-#livesIcons {
-    display: inline-flex;
-    gap: 5px;
-    align-items: center;
-    justify-content: center;
-}
-
-.life-icon {
-    width: 24px;
-    height: 24px;
-}
-
-/* Mobile layout */
-@media (max-width: 768px) {
-    #gameContainer {
-        flex-direction: column;
+    #board {
+        display: grid;
+        gap: 3px;
+        justify-content: center;
         align-items: center;
+        touch-action: none;
+        user-select: none;
     }
 
-    canvas {
-        width: 95%;
-        height: auto;
+    .cell {
+        width: 38px;
+        height: 38px;
+        background: #aeb8c2;
+        border: 2px solid #e0e0e0;
+        box-sizing: border-box;
+        color: #111;
+        font-size: 21px;
+        font-weight: bold;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        user-select: none;
     }
 
-    #mapCanvas {
-        display: block;
-        margin-top: 10px;
+    .cell:hover {
+        background: #d5dce2;
+    }
+
+    .filled {
+        background: #3498db;
+        border: 2px solid #217dbb;
+    }
+
+    .filled:hover {
+        background: #2980b9;
+    }
+
+    .marked {
+        background: #e6e6e6;
+        color: #e74c3c;
+    }
+
+    .clue {
+        width: 38px;
+        height: 38px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        font-size: 13px;
+        font-weight: bold;
+        line-height: 15px;
+        color: white;
+        user-select: none;
+    }
+
+    .column-clue {
+        height: 70px;
+        justify-content: flex-end;
+        padding-bottom: 3px;
+        box-sizing: border-box;
+    }
+
+    .row-clue {
+        width: 45px;
+        text-align: right;
+        padding-right: 5px;
+        box-sizing: border-box;
+        flex-direction: row;
+        gap: 4px;
+    }
+
+    .clue.complete {
+        color: #2ecc71;
+    }
+
+    button {
+        padding: 10px 22px;
+        background: #3498db;
+        border: none;
+        border-radius: 5px;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #217dbb;
+    }
+
+    #message {
+        font-size: 18px;
+        margin: 15px;
     }
 
     #instructions {
-        position: fixed;
-        left: 5%;
-        right: 5%;
-        top: 100px;
+        color: #bdc3c7;
+        font-size: 14px;
     }
-}
-
-/* Desktop layout */
-@media (min-width: 769px) {
-    #gameContainer {
-        flex-direction: row;
-        justify-content: center;
-    }
-
-    #mapCanvas {
-        display: block;
-        margin-left: 10px;
-    }
-}
-    </style>
+</style>
 </head>
+
+<body>
+
+<h1>NONOGRAM 042</h1>
+
+<p>Reveal the hidden pattern!</p>
+
+<p id="message">Good luck!</p>
+
+<div id="game">
+    <div id="board"></div>
+</div>
+
+<p id="instructions">
+    Left-click / drag: Background |
+    Right-click / drag: Flag (X)
+</p>
+
+<button onclick="startGame()">Restart Game</button>
+
+<script>
+
+const ROWS = 7;
+const COLS = 13;
+
+const zero = [
+    "111",
+    "101",
+    "101",
+    "101",
+    "111"
+];
+
+const four = [
+    "101",
+    "101",
+    "111",
+    "001",
+    "001"
+];
+
+const two = [
+    "111",
+    "001",
+    "111",
+    "100",
+    "111"
+];
+
+function createSolution() {
+    const pattern = [];
+
+    for (let r = 0; r < 5; r++) {
+        pattern.push(
+            zero[r] + "0" + four[r] + "0" + two[r]
+        );
+    }
+
+    return [
+        "0000000000000",
+        ...pattern.map(row => "0" + row + "0"),
+        "0000000000000"
+    ];
+}
+
+const solution = createSolution();
+
+let board = [];
+let gameOver = false;
+
+// Dragging state
+let isDragging = false;
+let dragButton = null;
+let dragValue = null;
+let visitedCells = new Set();
+
+function getClues(line) {
+    const clues = [];
+    let count = 0;
+
+    for (let i = 0; i < line.length; i++) {
+        if (line[i] === "1") {
+            count++;
+        } else if (count > 0) {
+            clues.push(count);
+            count = 0;
+        }
+    }
+
+    if (count > 0) {
+        clues.push(count);
+    }
+
+    return clues.length ? clues : [0];
+}
+
+function getRowClues() {
+    return solution.map(row => getClues(row));
+}
+
+function getColumnClues() {
+    const clues = [];
+
+    for (let c = 0; c < COLS; c++) {
+        let column = "";
+
+        for (let r = 0; r < ROWS; r++) {
+            column += solution[r][c];
+        }
+
+        clues.push(getClues(column));
+    }
+
+    return clues;
+}
+
+const rowClues = getRowClues();
+const columnClues = getColumnClues();
+
+function startGame() {
+    gameOver = false;
+    isDragging = false;
+    dragButton = null;
+    dragValue = null;
+    visitedCells.clear();
+
+    board = [];
+
+    for (let r = 0; r < ROWS; r++) {
+        board[r] = [];
+
+        for (let c = 0; c < COLS; c++) {
+            board[r][c] = {
+                filled: false,
+                marked: false
+            };
+        }
+    }
+
+    renderBoard();
+
+    document.getElementById("message").textContent =
+        "Good luck!";
+}
+
+function isRowComplete(r) {
+    for (let c = 0; c < COLS; c++) {
+        if (
+            (solution[r][c] === "1") !==
+            board[r][c].marked
+        ) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function isColumnComplete(c) {
+    for (let r = 0; r < ROWS; r++) {
+        if (
+            (solution[r][c] === "1") !==
+            board[r][c].marked
+        ) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function renderBoard() {
+    const boardElement = document.getElementById("board");
+
+    boardElement.innerHTML = "";
+
+    boardElement.style.gridTemplateColumns =
+        `45px repeat(${COLS}, 38px)`;
+
+    const corner = document.createElement("div");
+    boardElement.appendChild(corner);
+
+    // Column clues
+    for (let c = 0; c < COLS; c++) {
+        const clueBox = document.createElement("div");
+
+        clueBox.className = "clue column-clue";
+
+        if (isColumnComplete(c)) {
+            clueBox.classList.add("complete");
+        }
+
+        columnClues[c].forEach(number => {
+            const span = document.createElement("span");
+            span.textContent = number;
+            clueBox.appendChild(span);
+        });
+
+        boardElement.appendChild(clueBox);
+    }
+
+    // Rows and cells
+    for (let r = 0; r < ROWS; r++) {
+
+        const clueBox = document.createElement("div");
+
+        clueBox.className = "clue row-clue";
+
+        if (isRowComplete(r)) {
+            clueBox.classList.add("complete");
+        }
+
+        rowClues[r].forEach(number => {
+            const span = document.createElement("span");
+            span.textContent = number;
+            clueBox.appendChild(span);
+        });
+
+        boardElement.appendChild(clueBox);
+
+        for (let c = 0; c < COLS; c++) {
+            const cell = board[r][c];
+
+            const div = document.createElement("div");
+
+            div.className = "cell";
+            div.dataset.row = r;
+            div.dataset.col = c;
+
+            if (cell.filled) {
+                div.classList.add("filled");
+            }
+
+            if (cell.marked) {
+                div.classList.add("marked");
+                div.textContent = "×";
+            }
+
+            // Start painting on mouse down
+            div.addEventListener("mousedown", e => {
+                if (e.button !== 0 && e.button !== 2) return;
+
+                e.preventDefault();
+
+                startPainting(r, c, e.button);
+            });
+
+            // Continue painting while dragging
+            div.addEventListener("mouseenter", () => {
+                if (isDragging) {
+                    paintCell(r, c);
+                }
+            });
+
+            // Prevent right-click menu
+            div.addEventListener("contextmenu", e => {
+                e.preventDefault();
+            });
+
+            boardElement.appendChild(div);
+        }
+    }
+}
+
+// Start a drag operation
+function startPainting(r, c, button) {
+    if (gameOver) return;
+
+    isDragging = true;
+    dragButton = button;
+
+    visitedCells.clear();
+
+    const cell = board[r][c];
+
+    // Left mouse = blue background
+    // Right mouse = X flag
+    if (button === 0) {
+        dragValue = !cell.filled;
+
+    } else {
+        dragValue = !cell.marked;
+    }
+
+    paintCell(r, c);
+}
+
+// Paint a cell without repeatedly toggling it
+function paintCell(r, c) {
+    if (!isDragging || gameOver) return;
+
+    const key = `${r},${c}`;
+
+    if (visitedCells.has(key)) return;
+
+    visitedCells.add(key);
+
+    const cell = board[r][c];
+
+    if (dragButton === 0) {
+        cell.filled = dragValue;
+
+        if (dragValue) {
+            cell.marked = false;
+        }
+
+    } else if (dragButton === 2) {
+        cell.marked = dragValue;
+
+        if (dragValue) {
+            cell.filled = false;
+        }
+    }
+
+    renderBoard();
+
+    if (dragButton === 2) {
+        checkWin();
+    }
+}
+
+// Stop dragging when mouse is released
+document.addEventListener("mouseup", () => {
+    isDragging = false;
+    dragButton = null;
+    dragValue = null;
+    visitedCells.clear();
+});
+
+// Stop dragging if mouse leaves the window
+document.addEventListener("mouseleave", () => {
+    isDragging = false;
+    dragButton = null;
+    dragValue = null;
+    visitedCells.clear();
+});
+
+// Check the solution
+function checkWin() {
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+
+            const correct = solution[r][c] === "1";
+            const flagged = board[r][c].marked;
+
+            if (correct !== flagged) {
+                return;
+            }
+        }
+    }
+
+    gameOver = true;
+    isDragging = false;
+
+    renderBoard();
+
+    document.getElementById("message").textContent =
+        "🎉 Congratulations! You solved the puzzle!";
+}
+
+startGame();
+
+</script>
+
+</body>
 </html>
