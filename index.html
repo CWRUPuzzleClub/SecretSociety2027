@@ -1,1007 +1,171 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Clue: The Floors of Mystery</title>
-    <style>
-        body { text-align:center; font-family:sans-serif; position: relative; }
 
-        #hud { margin-bottom:10px; font-size:16px; }
-        #hud p { margin:2px; }
+body {
+    background: #20252b;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    position: relative;
+    margin: 0;
+    padding: 10px;
+}
 
-        #gameContainer {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
+h2 {
+    margin-top: 25px;
+    letter-spacing: 3px;
+}
 
+#hud {
+    margin-bottom: 15px;
+    font-size: 16px;
+}
 
-        canvas {
-            background-color:#b4b4b4;
-            display:block;
-            margin:5px;
-            border:1px solid black;
-        }
+#hud p {
+    margin: 5px;
+}
 
-        #cheatDisplay { font-size:16px; margin-top:10px; }
-        #mapButton, #instructionButton { margin:10px; padding:5px 10px; font-size:16px; }
+#gameContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
 
-        #instructions {
-            display:none;
-            position:absolute;
-            left:10px;
-            top:100px;
-            background-color:#f0f0f0;
-            padding:10px;
-            border:1px solid #000;
-            text-align:left;
-        }
+canvas {
+    background-color: #aeb8c2;
+    display: block;
+    margin: 5px;
+    border: 2px solid #e0e0e0;
+    border-radius: 4px;
+    max-width: 100%;
+}
 
-        #buttonControls {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            display:none;
-        }
+#mapCanvas {
+    background-color: #aeb8c2;
+}
 
-        #buttonControls button {
-            font-size: 40px;
-            padding: 20px 25px;
-            margin: 5px;
-            border-radius: 8px;
-        }
+button {
+    padding: 10px 22px;
+    background: #3498db;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 5px;
+}
 
-        /* Cheat input styling */
-        #cheatContainer {
-            margin-top: 10px;
-        }
+button:hover {
+    background: #217dbb;
+}
 
-        #cheatInput { font-size:16px; padding:4px; width:150px; }
-        #cheatButton { font-size:16px; padding:4px 8px; }
+#cheatContainer {
+    margin-top: 15px;
+}
 
-        /* Mobile-specific layout */
-        @media (max-width: 768px) {
-            #gameContainer {
-                flex-direction: column; /* Stack game and map vertically on mobile */
-                align-items: center;
-            }
-            #mapCanvas {
-                display:block;
-                margin-top:10px;
-            }
-        }
+#cheatInput {
+    font-size: 16px;
+    padding: 9px;
+    width: 150px;
+    border: 1px solid #bdc3c7;
+    border-radius: 5px;
+    background: #ecf0f1;
+    color: #20252b;
+}
 
-        /* Desktop-specific layout */
-        @media (min-width: 769px) {
-            #gameContainer {
-                flex-direction: row; /* Arrange game and map side-by-side on desktop */
-                justify-content: center;
-            }
-            #mapCanvas {
-                display:block;
-                margin-left: 10px; /* Space between game and map */
-            }
-        }
-        #livesIcons {
-            display: inline-flex;
-            gap: 5px;
-            align-items: center;
-            justify-content: center;
-        }
+#cheatButton {
+    font-size: 16px;
+    padding: 10px 18px;
+}
 
-        .life-icon {
-            width: 24px;
-            height: 24px;
-        }
-    </style>
-</head>
-<body>
-<h2>Clue: The Floors of Mystery</h2>
+#cheatDisplay {
+    font-size: 16px;
+    margin-top: 10px;
+    color: #2ecc71;
+}
 
-<div id="hud">
-    <p id="roomInfo">Room: GAMEROOM</p>
-    <p id="mapInfo">Guards: 2 | Doors 4</p>
-    <p id="weaponsInfo">Weapons: 0/6</p>
-    <p id="livesInfo">Lives:</p>
-    <div id="livesIcons"></div>
+#instructions {
+    display: none;
+    position: absolute;
+    left: 10px;
+    top: 100px;
+    background-color: #303841;
+    color: #bdc3c7;
+    padding: 15px;
+    border: 1px solid #3498db;
+    border-radius: 5px;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.7;
+    z-index: 200;
+}
 
-</div>
+#buttonControls {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    display: none;
+}
 
-<div id="gameContainer">
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <canvas id="mapCanvas" width="300" height="600" style="display:none;"></canvas>
-</div>
+#buttonControls button {
+    font-size: 30px;
+    padding: 15px 22px;
+    margin: 5px;
+    border-radius: 8px;
+    background: #3498db;
+}
 
-<div>
-    <button id="mapButton">Toggle Map</button>
-    <button id="instructionButton">Toggle Instructions</button>
-</div>
+#buttonControls button:hover {
+    background: #217dbb;
+}
 
-<div id="cheatContainer">
-    <input type="text" id="cheatInput" placeholder="Type Here">
-    <button id="cheatButton">Activate</button>
-    <p id="cheatDisplay"></p>
-</div>
+#livesIcons {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    justify-content: center;
+}
 
-<p id="instructions">
-    1. Use the arrow keys to travel between rooms. <br>
-    2. Navigate the mansion to collect all six weapons. <br>
-    3. Avoid the guards! Each guard hit costs a life. <br>
-    4. You have 5 lives. Lose all, and it's Game Over. <br>
-    5. Check the map to view your location.
-</p>
+.life-icon {
+    width: 24px;
+    height: 24px;
+}
 
-<div id="buttonControls">
-    <button data-dir="up">▲</button>
-    <br>
-    <button data-dir="left">◀</button>
-    <button data-dir="down">▼</button>
-    <button data-dir="right">▶</button>
-</div>
-
-<script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const mapCanvas = document.getElementById('mapCanvas');
-    const mapCtx = mapCanvas.getContext('2d');
-
-    const roomInfo = document.getElementById("roomInfo");
-    const mapInfo = document.getElementById("mapInfo");
-    const weaponsInfo = document.getElementById("weaponsInfo");
-    const livesInfo = document.getElementById("livesInfo");
-    const cheatDisplay = document.getElementById("cheatDisplay");
-
-    let gameLoopId = null;
-
-    let player = {x:50,y:50,w:25,h:46,speed:3};
-    let guardCount = 2;
-    let doorCount = 4;
-    let collected = [];
-    let currentRoom = "GAMEROOM";
-    let showMap = false;
-    let lives = 5;
-    let gameOver = false;
-    let guards = [
-        { x:200, y:150, w:37.5, h:37.5, speed:1, dx:1, dy:0, room:"GAMEROOM", fill:"red", outline:"black" },
-        { x:500, y:400, w:37.5, h:37.5, speed:1, dx:0, dy:1, room:"DINING ROOM", fill:"red", outline:"black" }
-    ];
-    let requiredWeapons = 6;
-    let deathPenalty = 1;
-
-    const sprites = {};
-    function loadSprite(key,src){
-        const img = new Image();
-        img.src = src;
-        sprites[key] = img;
-    }
-    //Get sprites
-    loadSprite("player", "assets/Misc/player.png");
-    loadSprite("guard", "assets/Misc/guard.png");
-    loadSprite("weapon1", "assets/Misc/weapon_sword.png");
-    loadSprite("weapon2", "assets/Misc/weapon_mace.png");
-    loadSprite("weapon3", "assets/Misc/weapon_bow.png");
-
-    //Get dining/study objects
-    loadSprite("diningTable", "assets/StudyAndDining/longtable.png");
-    loadSprite("plate", "assets/StudyAndDining/plate.png");
-    loadSprite("diningfood1", "assets/StudyAndDining/dining_cake.png");
-    loadSprite("diningfood2", "assets/StudyAndDining/dining_waffle.png");
-    loadSprite("diningfood3", "assets/StudyAndDining/dining_pudding.png");
-    loadSprite("studyTable", "assets/StudyAndDining/studyTable.png");
-    loadSprite("studyfood1", "assets/StudyAndDining/study_loaf.png");
-    loadSprite("studyfood2", "assets/StudyAndDining/study_pie.png");
-    loadSprite("studyfood3", "assets/StudyAndDining/study_milk.png");
-
-    //Get study additional objects
-    loadSprite("stove", "assets/StudyAndDining/studyStove.png");
-    loadSprite("cup", "assets/StudyAndDining/teacup.png");
-    loadSprite("beansack", "assets/StudyAndDining/coffeeSack.png");
-    loadSprite("press", "assets/StudyAndDining/coffeePress.png");
-    loadSprite("filter", "assets/StudyAndDining/coffeeFilter.png");
-    loadSprite("coffeeCup", "assets/StudyAndDining/coffeeCup.png");
-
-    //Get library additional objects
-    loadSprite("book", "assets/Library/book.png");
-    loadSprite("shelf1", "assets/Library/bookshelf1.png");
-    loadSprite("shelf2", "assets/Library/bookshelf2.png");
-    loadSprite("cat", "assets/Library/cat1.png");
-    loadSprite("computer", "assets/Library/computer.png");
-
-    //Get art objects
-    loadSprite("art1", "assets/Art/Art1.png");
-    loadSprite("art2", "assets/Art/Art2.png");
-    loadSprite("art3", "assets/Art/Art3.png");
-    loadSprite("art4", "assets/Art/Art4.png");
-    loadSprite("art5", "assets/Art/Art5.png");
-    loadSprite("art6", "assets/Art/Art6.png");
-    loadSprite("art7", "assets/Art/Art7.png");
-    loadSprite("art8", "assets/Art/Art8.png");
-
-    //Get conservatory objects
-    loadSprite("plant1", "assets/Conservatory/Plant1.png");
-    loadSprite("plant2", "assets/Conservatory/Plant2.png");
-    loadSprite("plant3", "assets/Conservatory/Plant3.png");
-    loadSprite("plant4", "assets/Conservatory/Plant4.png");
-
-    //Get Game Room objects
-    loadSprite("dancer1", "assets/GAMEROOM/dancer1.png");
-    loadSprite("dancer2", "assets/GAMEROOM/dancer2.png");
-    loadSprite("dancer3", "assets/GAMEROOM/dancer3.png");
-    loadSprite("disco", "assets/GAMEROOM/discoball.png");
-    loadSprite("paradoxGuy", "assets/GAMEROOM/paradoxGuy.png");
-
-    loadSprite("floor1", "assets/floor1.png");
-    loadSprite("floor2", "assets/floor2.png");
-    loadSprite("stairDown", "assets/floor2stair.png");
-    loadSprite("stairUp", "assets/floor1stair.png");
-    loadSprite("flooring", "assets/flooring.jpg");
-
-    // --- Temporary active cheat trackers ---
-    let activeGuards = [];
-    let zkyekoTimeout = null;
-    let nkuglaTimeout = null;
-    let anzpylTimeout = null;
-
-    const secretCodes = ["ANZPYL", "PSPTVX", "ZKYEKO", "LNVNLS", "VKOGPZ", "NKUGLA"]
-    const codeDescript = new Map([
-        ["ANZPYL", "15 new guards spawn into the game room you are in"],
-        ["ZKYEKO", "3 doors are modified to lead to incorrect rooms"],
-        ["LNVNLS", "You gained 8 lives"],
-        ["OSYZNK", "Resets all weapons"],
-        ["TOXEYL", "Guards in a room leave building"],
-        ["PSPTVX", "18 more weapons must be collected"],
-        ["VKOGPZ", "9 extra doors are formed"],
-        ["GISPZG", "Weapons are attracted to the player’s room"],
-        ["NKUGLA", "You lose 4 lives each time you die"]
-    ]);
-
-    const cheatCodes = {
-        "ANZPYL": () => {
-            let added = [];
-            for (let i=0;i<15;i++){
-                const g = {
-                    x: Math.random()*700+50,
-                    y: Math.random()*500+50,
-                    w:25,h:25,
-                    speed:1,
-                    dx:Math.floor(Math.random()*3)-1,
-                    dy:Math.floor(Math.random()*3)-1,
-                    room: currentRoom
-                };
-                guards.push(g);
-                added.push(g);
-            }
-            activeGuards.push(...added);
-            guardCount = guards.length
-            // remove after 15s
-            anzpylTimeout = setTimeout(()=>{
-                for(const g of added){
-                    const idx=guards.indexOf(g);
-                    if(idx>=0) guards.splice(idx,1);
-                }
-                guardCount = guards.length
-                cheatDisplay.textContent = "ANZPYL effect ended";
-            },15000);
-        },
-        "ZKYEKO": () => {
-            // Cancel previous timeout if active
-            if(zkyekoTimeout) clearTimeout(zkyekoTimeout);
-            let allRooms = Object.keys(ROOMS);
-            let changed=0;
-            for(const r of allRooms){
-                for(const d of ROOMS[r].doors){
-                    if(changed>=3) break;
-                    let wrong;
-                    do { wrong = allRooms[Math.floor(Math.random()*allRooms.length)]; }
-                    while(wrong===d.to);
-                    d._original = d.to; // store original
-                    d.to = wrong;
-                    changed++;
-                }
-            }
-            zkyekoTimeout = setTimeout(()=>{
-                for(const r of allRooms){
-                    for(const d of ROOMS[r].doors){
-                        if(d._original) d.to = d._original;
-                    }
-                }
-                cheatDisplay.textContent = "ZKYEKO effect ended";
-                zkyekoTimeout = null;
-            },120000);
-        },
-        "LNVNLS": () => { lives+=8; updateHUD(); },
-        "OSYZNK": () => {
-            collected = [];  // Reset collected weapons
-            for (const roomKey in ROOMS) {
-                const room = ROOMS[roomKey];
-                room.weapons = [...originalWeapons[roomKey]];  // Restore the original weapons
-            }
-            updateHUD();
-        },
-        "TOXEYL": () => {
-            if(anzpylTimeout){
-                clearTimeout(anzpylTimeout);
-                anzpylTimeout = null;
-            }
-            added = [];
-            activeGuards = [];
-            for (let g = guards.length-1; g >= 0; g--) {
-                if(guards[g].room == currentRoom){
-                    guards.splice(g,1)
-                }
-            }
-            guardCount = guards.length;
-            updateHUD();
-        },
-        "PSPTVX": () => {
-            const allRooms = Object.keys(ROOMS);
-            for (let i = 0; i < 18; i++) {
-                const roomKey = allRooms[Math.floor(Math.random() * allRooms.length)];
-                const room = ROOMS[roomKey];
-
-                // Create a new weapon
-                const weapon = {
-                    name: "CheatWeapon " + (i + 1),
-                    w: 40,
-                    h: 40,
-                    x: Math.random() * (800 - 40) + 20,
-                    y: Math.random() * (600 - 40) + 20,
-                    icon: "weapon"+(i%3+1)+""
-                };
-
-                // Add the new weapon to the room’s weapons array (without affecting other room properties)
-                room.weapons.push(weapon);
-            }
-            requiredWeapons += 18;
-            updateHUD();
-        },
-        "VKOGPZ": () => {
-            const allRooms = Object.keys(ROOMS);
-            const DOOR_W = 11;
-            const DOOR_H = 80;
-            const MAX_ATTEMPTS = 20;
-
-            function overlaps(a, b) {
-                return (
-                    a.x < b.x + b.w &&
-                    a.x + a.w > b.x &&
-                    a.y < b.y + b.h &&
-                    a.y + a.h > b.y
-                );
-            }
-
-            for (let i = 0; i < 9; i++) {
-                const roomKey = allRooms[Math.floor(Math.random() * allRooms.length)];
-                const room = ROOMS[roomKey];
-
-                let placed = false;
-                let attempts = 0;
-
-                while (!placed && attempts < MAX_ATTEMPTS) {
-                    attempts++;
-
-                    const onLeft = Math.random() < 0.5;
-                    const door = {
-                        x: onLeft ? 0 : 789,
-                        y: Math.random() * (600 - DOOR_H - 20) + 10,
-                        w: DOOR_W,
-                        h: DOOR_H,
-                        to: allRooms[Math.floor(Math.random() * allRooms.length)],
-                        color: "white"
-                    };
-
-                    // Check against existing doors in this room
-                    const collision = room.doors.some(d => overlaps(door, d));
-
-                    if (!collision) {
-                        room.doors.push(door);
-                        placed = true;
-                    }
-                }
-            }
-
-            doorCount += 9;
-            updateHUD();
-        },
-
-        "GISPZG": () => {
-            const targetRoom = ROOMS[currentRoom];
-            let movedWeapons = [];
-
-            // Collect all weapons from all rooms
-            for (const roomKey in ROOMS) {
-                const room = ROOMS[roomKey];
-                if (!room.weapons || roomKey === currentRoom) continue;
-
-                movedWeapons.push(...room.weapons);
-                room.weapons.length = 0; // clear weapons from that room
-            }
-
-             movedWeapons.forEach(w => {
-                w.x = Math.random() * (800 - w.w - 40) + 20;
-                w.y = Math.random() * (600 - w.h - 40) + 20;
-            });
-
-            // Add them to the current room
-            targetRoom.weapons.push(...movedWeapons);
-        },
-        "NKUGLA": () => {
-            deathPenalty = 4;
-            if(nkuglaTimeout) clearTimeout(nkuglaTimeout);
-            nkuglaTimeout = setTimeout(()=>{
-                deathPenalty = 1;
-                cheatDisplay.textContent = "NKUGLA effect ended";
-                nkuglaTimeout=null;
-            },15000);
-        }
-    };
-
-    // ---------- Cheat input ----------
-    const cheatInput = document.getElementById('cheatInput');
-    const cheatButton = document.getElementById('cheatButton');
-
-    function activateCheat(code){
-        code = code.toUpperCase();
-        if(cheatCodes[code]){
-            cheatCodes[code]();
-            cheatInput.value = "";
-            if(secretCodes.includes(code)){
-                cheatDisplay.textContent = "Cheat " + code + ": " + codeDescript.get(code);
-            }else{
-                cheatDisplay.textContent = null;
-            }
-            updateHUD();
-        } else {
-            cheatDisplay.textContent = "Invalid cheat: " + code;
-        }
-    }
-    cheatButton.addEventListener('click', ()=>activateCheat(cheatInput.value));
-    cheatInput.addEventListener('keydown', e=>{ if(e.key==="Enter") activateCheat(cheatInput.value); });
-
-    // ---------- Rooms ----------
-    const ROOMS = {
-        "STUDY":{
-            floor:1,
-            weapons:[
-                {name:"Knife",x:50,y:50,w:40,h:40,icon: "weapon1"}
-            ],
-            walls:[
-                {x:0,y:0,w:800,h:10},
-                {x:0,y:0,w:10,h:600},
-                {x:790,y:0,w:10,h:600},
-                {x:0,y:590,w:800,h:10}
-            ],
-            doors:[
-                {x:789,y:250,w:11,h:100,to:"GAMEROOM"}
-            ],
-            objects:[
-                {type:"img", x: 175, y: 310, w: 450, h: 75, icon: "studyTable"},
-                {type:"img", x: 245, y: 310, w: 30, h: 20, icon: "plate"},
-                {type:"img", x: 535, y: 310, w: 30, h: 20, icon: "plate"},
-                {type:"img", x: 247, y: 305, w: 25, h: 20, icon: "studyfood1"},
-                {type:"img", x: 392, y: 290, w: 25, h: 40, icon: "studyfood3"},
-                {type:"img", x: 537, y: 305, w: 25, h: 20, icon: "studyfood2"},
-                {type:"rect", x:200, y:490, w:400, h:20, color:"#BC6A3C"},
-                {type:"rect", x:200, y:490, w:20, h:100, color:"#BC6A3C"},
-                {type:"img", x:250, y:0, w:300, h:122.5, icon: "stove"},
-                {type:"img", x:250, y:475, w:30, h:26, icon: "cup"},
-                {type:"img", x:370, y:475, w:30, h:26, icon: "cup"},
-                {type:"img", x:450, y:475, w:30, h:26, icon: "cup"},
-                {type:"img", x:310, y:455, w:48.4/2, h:91.6/2, icon: "coffeeCup"},
-                {type:"img", x:530, y:455, w:48.4/2, h:91.6/2, icon: "coffeeCup"},
-                {type:"img", x:200, y:460, w:47.5/2, h:91.4/2, icon: "press"},
-                {type:"img", x:200, y:510, w:71/2, h:71.7/2, icon: "filter"},
-                {type:"img", x:195, y:555, w:62.4/2, h:61/2, icon: "beansack"}
-            ],
-            stairs:null
-        },
-        "GAMEROOM":{
-            floor:1,
-            weapons:[
-                {name:"Candlestick",x:300,y:100,w:40,h:40,icon: "weapon3"}
-            ],
-            walls:[
-                {x:0,y:0,w:800,h:10},
-                {x:0,y:0,w:10,h:600},
-                {x:790,y:0,w:10,h:600},
-                {x:0,y:590,w:800,h:10}
-            ],
-            doors:[
-                {x:0,y:250,w:11,h:100,to:"STUDY"},
-                {x:350,y:589,w:100,h:11,to:"DINING ROOM"},
-                {x:789,y:100,w:11,h:100,to:"LIBRARY"}
-            ],
-            objects:[
-                {type:"img", x: 175, y: 135, w: 68/3, h: 165/3, icon: "dancer1"},
-                {type:"img", x: 610, y: 275, w: 79/3, h: 148/3, icon: "dancer2"},
-                {type:"img", x: 390, y: 410, w: 71/3, h: 108/3, icon: "dancer3"},
-                {type:"img", x: 510, y: 100, w: 68/3, h: 165/3, icon: "dancer1"},
-                {type:"img", x: 225, y: 400, w: 79/3, h: 148/3, icon: "dancer2"},
-                {type:"img", x: 400, y: 150, w: 71/3, h: 108/3, icon: "dancer3"},
-                {type:"img", x: 380, y: 300, w: 1432/35, h: 1465/35, icon: "paradoxGuy"},
-            ],
-            stairs:null
-        },
-        "LIBRARY":{
-            floor:1,
-            weapons:[
-                {name:"Pistol",x:600,y:450,w:40,h:40,icon: "weapon2"}
-            ],
-            walls:[
-                {x:0,y:0,w:800,h:10},
-                {x:0,y:0,w:10,h:600},
-                {x:790,y:0,w:10,h:600},
-                {x:0,y:590,w:800,h:10}
-            ],
-            doors:[
-                {x:0,y:100,w:11,h:100,to:"GAMEROOM"}
-            ],
-            objects:[
-                {type:"img", x: 175, y: 135, w: 406/10, h: 410/10, icon: "book"},
-                {type:"img", x: 170, y: 100, w: 1398/25, h: 1501/25, icon: "cat"},
-
-                {type:"img", x: 740, y: 130, w: 1165/20, h: 1117/10, icon: "shelf1"},
-                {type:"img", x: 740, y: 10, w: 1030/20, h: 1213/10, icon: "shelf2"},
-                {type:"img", x: 740, y: 360, w: 1165/20, h: 1117/10, icon: "shelf1"},
-                {type:"img", x: 740, y: 240, w: 1030/20, h: 1213/10, icon: "shelf2"},
-                {type:"img", x: 740, y: 470, w: 1030/20, h: 1213/10, icon: "shelf2"},
-
-                {type:"img", x: 350, y: 130, w: 1165/20, h: 1117/10, icon: "shelf1"},
-                {type:"img", x: 350, y: 10, w: 1030/20, h: 1213/10, icon: "shelf2"},
-                {type:"img", x: 350, y: 240, w: 1030/20, h: 1213/10, icon: "shelf2"},
-                {type:"img", x: 350, y: 470, w: 1030/20, h: 1213/10, icon: "shelf2"},
-
-                {type:"img", x: 490, y: 300, w: 406/10, h: 410/10, icon: "book"},
-                {type:"img", x: 490, y: 265, w: 1398/25, h: 1501/25, icon: "cat"},
-
-                {type:"img", x: 12, y: 10, w: 1030/20, h: 1213/10, icon: "shelf2"},
-                {type:"img", x: 12, y: 360, w: 1165/20, h: 1117/10, icon: "shelf1"},
-                {type:"img", x: 12, y: 240, w: 1030/20, h: 1213/10, icon: "shelf2"},
-                {type:"img", x: 12, y: 470, w: 1030/20, h: 1213/10, icon: "shelf2"},
-
-                {type:"img", x: 220, y: 430, w: 1398/25, h: 1501/25, icon: "diningTable"},
-                {type:"img", x: 225, y: 400, w: 434/10, h: 438/10, icon: "computer"},
-            ],
-            stairs:null
-        },
-        "DINING ROOM":{
-            floor:1,
-            weapons:[
-                {name:"Wrench",x:100,y:50,w:40,h:40,icon: "weapon1"}
-            ],
-            walls:[
-                {x:0,y:0,w:800,h:10},
-                {x:0,y:0,w:10,h:600},
-                {x:790,y:0,w:10,h:600},
-                {x:0,y:590,w:800,h:10},
-                {x:730,y:530,w:60,h:10}
-            ],
-            doors:[
-                {x:350,y:0,w:100,h:11,to:"GAMEROOM"}
-            ],
-            stairs:{x:715,y:525,w:115.1/3*2,h:111.2/3*2,to:"ART ROOM",icon:"stairUp"},
-            objects:[
-                {type:"img", x: 175, y: 300, w: 450, h: 75, icon: "diningTable"},
-                {type:"img", x: 245, y: 300, w: 30, h: 20, icon: "plate"},
-                {type:"img", x: 390, y: 300, w: 30, h: 20, icon: "plate"},
-                {type:"img", x: 535, y: 300, w: 30, h: 20, icon: "plate"},
-                {type:"img", x: 247, y: 295, w: 25, h: 20, icon: "diningfood1"},
-                {type:"img", x: 392, y: 295, w: 25, h: 20, icon: "diningfood2"},
-                {type:"img", x: 537, y: 295, w: 25, h: 20, icon: "diningfood3"}
-            ]
-
-        },
-        "ART ROOM":{
-            floor:2,
-            weapons:[
-                {name:"Lead Pipe",x:600,y:100,w:40,h:40,icon: "weapon2"}
-            ],
-            walls:[
-                {x:0,y:0,w:800,h:10},
-                {x:0,y:0,w:10,h:600},
-                {x:790,y:0,w:10,h:600},
-                {x:0,y:590,w:800,h:10},
-                {x:10,y:530,w:60,h:10}
-            ],
-            doors:[
-                {x:0,y:250,w:11,h:100,to:"CONSERVATORY"}
-            ],
-            stairs:{x:10,y:530,w:115.1/3*2,h:111.2/3*2,to:"DINING ROOM",icon:"stairDown"},
-            objects:[
-                {type:"img", x: 100, y: 15, w: 170*2/3, h: 96*2/3, icon: "art1"},
-                {type:"img", x: 200, y: 200, w: 186*2/3, h: 102.8*2/3, icon: "art2"},
-                {type:"img", x: 450, y: 250, w: 186*2/3, h: 104.4*2/3, icon: "art3"},
-                {type:"img", x: 400, y: 450, w: 185*2/3, h: 101.6*2/3, icon: "art4"},
-                {type:"img", x: 500, y: 15, w: 195*2/3, h: 108*2/3, icon: "art5"},
-                {type:"img", x: 200, y: 350, w: 170.4*2/3, h: 125.4*2/3, icon: "art6"},
-                {type:"img", x: 25, y: 450, w: 158.6*2/3, h: 105.2*2/3, icon: "art7"},
-                {type:"img", x: 600, y: 400, w: 163.4*2/3, h: 113.6*2/3, icon: "art8"}
-            ]
-        },
-        "CONSERVATORY":{
-            floor:2,
-            weapons:[
-                {name:"Rope",x:600,y:50,w:40,h:40,icon: "weapon3"}
-            ],
-            walls:[
-                {x:0,y:0,w:800,h:10},
-                {x:0,y:0,w:10,h:600},
-                {x:790,y:0,w:10,h:600},
-                {x:0,y:590,w:800,h:10}
-            ],
-            doors:[
-                {x:789,y:250,w:11,h:100,to:"ART ROOM"}
-            ],
-            stairs:null,
-            objects:[
-                {type:"img", x: 350, y: 15, w: 84, h: 76, icon: "plant1"},
-                {type:"img", x: 430, y: 200, w: 84, h: 76, icon: "plant1"},
-                {type:"img", x: 100, y: 30, w: 81, h: 162, icon: "plant2"},
-                {type:"img", x: 200, y: 350, w: 81, h: 162, icon: "plant2"},
-                {type:"img", x: 550, y: 350, w: 112, h: 152, icon: "plant3"},
-                {type:"img", x: 120, y: 525, w: 224, h: 64, icon: "plant4"},
-                {type:"img", x: 450, y: 525, w: 224, h: 64, icon: "plant4"}
-            ]
-        }
-    };
-    const originalWeapons = {}; // Store original weapons
-
-    backupOriginalWeapons();
-    // ---------- HUD ----------
-    const livesIcons = document.getElementById("livesIcons");
-    function updateHUD(){
-        roomInfo.textContent = "Room: "+currentRoom;
-        mapInfo.textContent = "Guards: "+guardCount+" | Doors: "+doorCount;
-        weaponsInfo.textContent = "Weapons: "+collected.length+"/"+requiredWeapons;
-        livesIcons.innerHTML = "";
-
-        // Draw one icon per life
-        for (let i = 0; i < lives; i++) {
-            const img = document.createElement("img");
-            img.src = "assets/Misc/heart.png";
-            img.className = "life-icon";
-            img.alt = "Life";
-            livesIcons.appendChild(img);
-        }
+/* Mobile layout */
+@media (max-width: 768px) {
+    #gameContainer {
+        flex-direction: column;
+        align-items: center;
     }
 
-    // ---------- Movement ----------
-    const keysPressed = {};
-    document.addEventListener('keydown', e=>{ keysPressed[e.key]=true; });
-    document.addEventListener('keyup', e=>{ keysPressed[e.key]=false; });
-
-    function moveFromButton(dir){
-        if(gameOver) return;
-        const prevX=player.x, prevY=player.y;
-        if(dir==="left") player.x-=player.speed;
-        if(dir==="right") player.x+=player.speed;
-        if(dir==="up") player.y-=player.speed;
-        if(dir==="down") player.y+=player.speed;
-        handleCollisions(prevX,prevY);
-        updateHUD();
+    canvas {
+        width: 95%;
+        height: auto;
     }
 
-    function handleKeyboardMovement() {
-        if (gameOver) {
-            player.speed = 0;  // Stop the player
-            for (let key in keysPressed) {
-                keysPressed[key] = false;  // Ensure all keys are released
-            }
-            return;  // Exit function immediately
-        }
-        // Continue movement logic as normal
-        if (keysPressed["ArrowLeft"]) moveFromButton("left");
-        if (keysPressed["ArrowRight"]) moveFromButton("right");
-        if (keysPressed["ArrowUp"]) moveFromButton("up");
-        if (keysPressed["ArrowDown"]) moveFromButton("down");
-        requestAnimationFrame(handleKeyboardMovement);
+    #mapCanvas {
+        display: block;
+        margin-top: 10px;
     }
 
-    handleKeyboardMovement();
+    #instructions {
+        position: fixed;
+        left: 5%;
+        right: 5%;
+        top: 100px;
+    }
+}
 
-    // ---------- Mobile buttons ----------
-    function isMobileDevice(){ return /Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(navigator.userAgent); }
-    if(isMobileDevice()){
-        const buttonControls = document.getElementById("buttonControls");
-        buttonControls.style.display="block";
-        const arrowButtons = buttonControls.querySelectorAll("button");
-        const activeDirs = {};
-        arrowButtons.forEach(btn=>{
-            const dir = btn.getAttribute("data-dir");
-            btn.addEventListener("touchstart", e=>{ e.preventDefault(); activeDirs[dir]=true; });
-            btn.addEventListener("touchend", e=>{ e.preventDefault(); activeDirs[dir]=false; });
-        });
-        function handleTouchMovement(){
-            for(const dir in activeDirs) if(activeDirs[dir]) moveFromButton(dir);
-            requestAnimationFrame(handleTouchMovement);
-        }
-        handleTouchMovement();
+/* Desktop layout */
+@media (min-width: 769px) {
+    #gameContainer {
+        flex-direction: row;
+        justify-content: center;
     }
 
-    // ---------- Collisions & drawing ----------
-    let stairCooldown=0;
-    let doorCooldown=0;
-
-    function handleCollisions(prevX, prevY){
-        const room = ROOMS[currentRoom];
-        // Stay in bounds
-        player.x = Math.max(10, Math.min(player.x,790-player.w));
-        player.y = Math.max(10, Math.min(player.y,590-player.h));
-        // Walls
-        for(const w of room.walls){
-            if(player.x+player.w>w.x && player.x<w.x+w.w && player.y+player.h>w.y && player.y<w.y+w.h){
-                player.x=prevX; player.y=prevY;
-            }
-        }
-
-        // Weapons
-        for(let i=room.weapons.length-1;i>=0;i--){
-            const w=room.weapons[i];
-            if(player.x+player.w>w.x && player.x<w.x+w.w && player.y+player.h>w.y && player.y<w.y+w.h){
-                collected.push(w.name);
-                room.weapons.splice(i,1);
-                if(collected.length >= requiredWeapons){
-                    gameOver = true;
-                    alert("Congratulations! You collected all weapons and won the game!");
-                }
-            }
-        }
-        if(room.objects!=null){
-            for (const obj of room.objects) {
-                if (player.x + player.w > obj.x && player.x < obj.x + obj.w && player.y + player.h > obj.y && player.y < obj.y + obj.h) {
-                    // Handle X-axis collision
-                    if (player.x + player.w > obj.x && prevX + player.w <= obj.x) {  // Moving right into object
-                        player.x = obj.x - player.w; // Push player back to the left side
-                    } else if (player.x < obj.x + obj.w && prevX >= obj.x + obj.w) {  // Moving left into object
-                        player.x = obj.x + obj.w;
-                    }
-
-                    // Handle Y-axis collision
-                    if (player.y + player.h > obj.y && prevY + player.h <= obj.y) {  // Moving down into object
-                        player.y = obj.y - player.h; // Push player back above object
-                    } else if (player.y < obj.y + obj.h && prevY >= obj.y + obj.h) {  // Moving up into object
-                        player.y = obj.y + obj.h;
-                    }
-                }
-            }
-        }
-        // Doors
-        if(doorCooldown>0) doorCooldown--;
-        else{
-            for(const d of room.doors){
-                if(player.x+player.w>d.x && player.x<d.x+d.w && player.y+player.h>d.y && player.y<d.y+d.h){
-                    currentRoom=d.to;
-                    if (player.x<30 ||player.x>750){
-                        player.x=800-player.x;
-                    }
-                    else{
-                        player.y=600-player.y;
-                    }
-                    doorCooldown=10;
-                    break;
-                }
-            }
-        }
-        // Stairs
-        if(stairCooldown>0) stairCooldown--;
-        else if(room.stairs && player.x+player.w>room.stairs.x && player.x<room.stairs.x+room.stairs.w && player.y+player.h>room.stairs.y && player.y<room.stairs.y+room.stairs.h){
-            currentRoom=room.stairs.to;
-            stairCooldown=10;
-            player.x=780-player.x;
-        }
+    #mapCanvas {
+        display: block;
+        margin-left: 10px;
     }
-
-    function draw(){
-            if(gameOver) return;
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-            const room=ROOMS[currentRoom];
-            ctx.fillStyle="#FFE4C8"; ctx.fillRect(0,0,canvas.width,canvas.height); // light yellow
-            if(room.stairs){
-                ctx.drawImage(sprites[room.stairs.icon],room.stairs.x,room.stairs.y,room.stairs.w,room.stairs.h);
-            }
-            ctx.fillStyle="#000"; for(const w of room.walls) ctx.fillRect(w.x,w.y,w.w,w.h);
-            for(const d of room.doors){ ctx.fillStyle = d.color || "#FFD700"; ctx.fillRect(d.x,d.y,d.w,d.h);}
-            if (room.objects) {
-                for (const obj of room.objects) {
-                    if(obj.type == "img"){
-                        const img = sprites[obj.icon];
-                        if (img && img.complete) {
-                            ctx.drawImage(img, obj.x, obj.y, obj.w, obj.h);
-                        }
-                    }
-                    else if(obj.type == "rect"){
-                        ctx.fillStyle = obj.color;
-                        ctx.fillRect(obj.x,obj.y,obj.w,obj.h);
-                    }
-                }
-            }
-
-
-            ctx.fillStyle="#008000";
-            for(const w of room.weapons){
-                ctx.drawImage(sprites[w.icon],w.x,w.y,w.w,w.h);
-            }
-            ctx.drawImage(sprites["player"],player.x,player.y,player.w,player.h);
-            for(const g of guards){
-                if(g.room===currentRoom){
-                    ctx.fillStyle="red";
-                    ctx.drawImage(sprites["guard"],g.x,g.y,g.w,g.h);
-                }
-            }
-            requestAnimationFrame(draw);
-        }
-
-        function drawMap() {
-
-            const allRooms = Object.keys(ROOMS);
-            const isMobile = isMobileDevice();
-
-            // Handle mobile layout (rooms side by side)
-            if (isMobile) {
-                mapCanvas.width = 817.2;
-                mapCanvas.height = 200;
-                mapCtx.drawImage(sprites["floor1"],0, 0, 281.1, 200);
-                mapCtx.drawImage(sprites["floor2"], 281.1, 0, 536.1, 200);
-
-            } else {
-                mapCanvas.width = 450;
-                mapCanvas.height = 316.2+167.9;
-                mapCtx.drawImage(sprites["floor1"],0, 0, 450, 316.2);
-                mapCtx.drawImage(sprites["floor2"],0, 316.2, 450, 167.9);
-            }
-
-            if (showMap) requestAnimationFrame(drawMap);
-        }
-
-    function backupOriginalWeapons() {
-        for (const roomKey in ROOMS) {
-            const room = ROOMS[roomKey];
-            // Create a backup of the original weapon objects for each room
-            originalWeapons[roomKey] = room.weapons.map(weapon => ({...weapon})); // Deep copy weapons
-        }
-    }
-    // Stop the game loop immediately
-    function resetGame() {
-        // Cancel any active game loop (ensure it stops the frame updates)
-        if (gameLoopId !== null) {
-            cancelAnimationFrame(gameLoopId);  // Stop the current game loop
-            gameLoopId = null;  // Clear the reference to the animation frame ID
-        }
-
-        // Reset the game state
-        player = {x: 50, y: 50, w: 25, h: 46, speed: 3};
-        guardCount = 2;
-        doorCount = 4;
-        collected = [];  // Reset collected weapons
-        currentRoom = "GAMEROOM";
-        lives = 5;
-        gameOver = false;
-
-        // Reset guards state (position, speed, etc.)
-        guards = [
-            {x: 200, y: 150, w: 37.5, h: 37.5, speed: 1, dx: 1, dy: 0, room: "GAMEROOM"},
-            {x: 500, y: 400, w: 37.5, h: 37.5, speed: 1, dx: 0, dy: 1, room: "DINING ROOM"}
-        ];
-
-        // Restore original weapon positions
-        for (const roomKey in ROOMS) {
-            const room = ROOMS[roomKey];
-            room.weapons = [...originalWeapons[roomKey]];  // Restore the original weapons
-        }
-
-        // Reset the HUD
-        updateHUD();
-
-        // Clear key states and stop any pending actions
-        for (let key in keysPressed) {
-            keysPressed[key] = false;
-        }
-
-        // Ensure the guards' positions and state are reset properly
-        for (const g of guards) {
-            g.dx = 1;  // Reset guard directions
-            g.dy = 0;  // Reset guard directions
-            g.x = Math.random() * 700 + 50;  // Randomize their spawn positions
-            g.y = Math.random() * 500 + 50;
-        }
-
-        // Reinitialize the game loop after the reset
-        startGameLoop();
-    }
-
-    // Game loop to handle the game state updates
-    function startGameLoop() {
-        gameLoopId = requestAnimationFrame(gameLoop);  // Start a fresh game loop
-    }
-
-    function gameLoop() {
-        if (gameOver) {
-            // Stop the game loop immediately if game is over
-            cancelAnimationFrame(gameLoopId);
-            gameLoopId = null;
-            return; // Prevent the loop from continuing
-        }
-
-        // Update the guards and their movements
-        moveGuards();
-
-        // Handle player collisions and other logic
-        handleCollisions(player.x, player.y);
-
-        // Request the next frame to keep the loop running
-        gameLoopId = requestAnimationFrame(gameLoop);
-    }
-
-    function moveGuards() {
-        for (const g of guards) {
-            if (g.room !== currentRoom) continue;  // Skip guards not in the current room
-
-            // Move the guard by their direction and speed
-            g.x += g.dx * g.speed;
-            g.y += g.dy * g.speed;
-
-            // Keep guards within room bounds
-            g.x = Math.max(10, Math.min(g.x, 790 - g.w));
-            g.y = Math.max(10, Math.min(g.y, 590 - g.h));
-
-            // Randomize their direction slightly every now and then
-            if (Math.random() < 0.01) {
-                g.dx = Math.floor(Math.random() * 3) - 1;  // Randomize dx (-1, 0, 1)
-                g.dy = Math.floor(Math.random() * 3) - 1;  // Randomize dy (-1, 0, 1)
-            }
-
-            // Check for collision with the player
-            if (player.x < g.x + g.w && player.x + player.w > g.x && player.y < g.y + g.h && player.y + player.h > g.y) {
-                // Player hit by guard
-                lives -= deathPenalty;
-                updateHUD();
-                if (lives <= 0) {
-                    gameOver = true;
-                    alert("Game Over! Resetting the game...");
-                    resetGame();  // Reset the game if lives hit 0
-                } else {
-                    player.x = 50;  // Reset player position
-                    player.y = 50;
-                }
-            }
-        }
-    }
-
-    draw();
-    gameLoop();
-
-    document.getElementById("mapButton").addEventListener("click", () => {
-        showMap = !showMap;
-        mapCanvas.style.display = showMap ? "block" : "none"; // Show/hide map
-
-        // Dynamically change the layout when map is toggled
-        const container = document.getElementById("gameContainer");
-
-        // Mobile: stack vertically, Desktop: side by side
-        if (showMap) {
-            if (isMobileDevice()) {
-                container.style.flexDirection = "column";  // Stack vertically on mobile
-            } else {
-                container.style.flexDirection = "row";     // Side by side on desktop
-            }
-            drawMap(); // Optional: Redraw the map when toggled
-        } else {
-            // Reset to desktop layout (row) when hiding the map
-            if (!isMobileDevice()) {
-                container.style.flexDirection = "row";
-            }
-        }
-    });
-
-    document.getElementById("instructionButton").addEventListener("click", ()=>{
-        const instr=document.getElementById("instructions");
-        instr.style.display=(instr.style.display==="none")?"block":"none";
-    });
-
-    updateHUD();
-</script>
-</body>
-</html>
+}
