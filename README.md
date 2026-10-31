@@ -1,1 +1,1 @@
-# ClueMysteryGame
+# Secret Society Puzzle Hunt
