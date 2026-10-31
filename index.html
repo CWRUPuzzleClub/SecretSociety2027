@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>To Stop A Murder</title>
+<title>Secret Bombs</title>
 
 <style>
     body {
@@ -67,6 +67,7 @@
     .marked {
         background: #e6e6e6;
         color: #e74c3c;
+        font-size: 23px
     }
 
     .clue {
@@ -131,7 +132,7 @@
 
 <body>
 
-<h1>NONOGRAM 042</h1>
+<h1>Secret Bombs</h1>
 
 <p>Reveal the hidden pattern!</p>
 
@@ -143,7 +144,7 @@
 
 <p id="instructions">
     Left-click / drag: Background |
-    Right-click / drag: Flag (X)
+    Right-click / drag: Place bomb (💣)
 </p>
 
 <button onclick="startGame()">Restart Game</button>
@@ -154,42 +155,36 @@ const ROWS = 7;
 const COLS = 13;
 
 const zero = [
-    "111",
-    "101",
-    "101",
-    "101",
-    "111"
+    "01",
+    "11",
+    "00"
 ];
 
 const four = [
-    "101",
-    "101",
-    "111",
-    "001",
-    "001"
+    "11",
+    "01",
+    "00"
 ];
 
 const two = [
-    "111",
-    "001",
-    "111",
-    "100",
-    "111"
+    "10",
+    "00",
+    "00"
 ];
 
 function createSolution() {
     const pattern = [];
 
-    for (let r = 0; r < 5; r++) {
+    for (let r = 0; r < 3; r++) {
         pattern.push(
             zero[r] + "0" + four[r] + "0" + two[r]
         );
     }
 
     return [
-        "0000000000000",
+        "0000000000",
         ...pattern.map(row => "0" + row + "0"),
-        "0000000000000"
+        "0000000000"
     ];
 }
 
@@ -363,7 +358,7 @@ function renderBoard() {
 
             if (cell.marked) {
                 div.classList.add("marked");
-                div.textContent = "×";
+                div.textContent = "💣";
             }
 
             // Start painting on mouse down
@@ -485,7 +480,7 @@ function checkWin() {
     renderBoard();
 
     document.getElementById("message").textContent =
-        "🎉 Congratulations! You solved the puzzle!";
+        "🎉 Congratulations! You found the bombs!";
 }
 
 startGame();
